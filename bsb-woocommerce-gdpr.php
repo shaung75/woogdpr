@@ -170,7 +170,7 @@ function bsb_print_list_field( $key, $field_args, $value = null ) {
 				/* Make customisable from backend */
 			?>
 			<h3>Contact preferences</h3>
-			<p>We'd love to send you money-off coupons, offers and the latest info from <?php bloginfo('name');?> bu email, post, SMS, phone and other electronic means. We'll always treat your personal details with the utmost care and will never sell them to other businesses for marketing purposes.</p>
+			<p>We'd love to send you money-off coupons, offers and the latest info from <?php bloginfo('name');?> by email, post, SMS, phone and other electronic means. We'll always treat your personal details with the utmost care and will never sell them to other businesses for marketing purposes.</p>
 
 			<p style="color: #a00;">Please let us know if you would like us to contact you or not by selecting one of the options below</p>
 		<?php } ?>
