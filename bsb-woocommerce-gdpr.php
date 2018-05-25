@@ -16,7 +16,7 @@ Text Domain: bsb
  */
 function bsb_get_account_fields() {
   return apply_filters( 'bsb_account_fields', array(
-    'bsb-contact-preferences'      => array(
+    'bsb_contact_preferences'      => array(
     	'type'    => 'radio',
         'label'   => __( 'Contact preferences', 'bsb' ),
         'gdpr-cp' => true,
@@ -102,7 +102,14 @@ function bsb_print_user_admin_fields() {
         </th>
         <td>
           <?php $field_args['label'] = false; ?>
-          <?php woocommerce_form_field( $key, $field_args, $value ); ?>
+          <?php 
+          	if ( $field_args['gdpr-cp'] ) {
+          		$res = get_user_meta($user_id, $key);
+				$text = $res[0] == 1 ? 'Opted in' : 'Opted out';
+				echo $text;
+          	} else {
+          		woocommerce_form_field( $key, $field_args, $value );
+          	}?>
         </td>
       </tr>
     <?php } ?>
@@ -148,7 +155,7 @@ add_filter( 'woocommerce_form_field_radio', 'bsb_form_field_modify', 10, 4 );
  * @param mixed  $value
  *
  */
-function bsb_print_list_field( $key, $field_args, $value = null ) {
+function bsb_print_list_field( $key, $field_args, $value = null, $uid = null ) {
 	$value = empty( $value ) && $field_args['type'] === 'checkboxes' ? array() : $value;
 	?>
 	<div class="form-row">
@@ -180,10 +187,21 @@ function bsb_print_list_field( $key, $field_args, $value = null ) {
 				$option_key = $field_args['type'] === 'checkboxes' ? sprintf( '%s[%s]', $key, $option_value ) : $key;
 				$type       = $field_args['type'] === 'checkboxes' ? 'checkbox' : $field_args['type'];
 				$checked    = $field_args['type'] === 'checkboxes' ? in_array( $option_value, $value ) : $option_value == $value;
+
+				if ( $field_args['type'] == 'radio' ) {
+					$res = get_user_meta(get_current_user_id(), $option_key);
+					$checked_r = $res[0] == $option_value ? 'checked' : '';
+				}
+				//echo $option_key; die();
+				//print_r(get_user_meta(get_current_user_id(), $option_key)); die();
+				//echo get_user_meta($user_id, $key, $single);
+				//echo get_current_user_id(); die();
+				//echo $checked; die();
+				//print_r($field_args); die();
 				?>
 				<li>
 					<label for="<?php echo esc_attr( $id ); ?>">
-						<input type="<?php echo esc_attr( $type ); ?>" id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $option_key ); ?>" value="<?php echo esc_attr( $option_value ); ?>" <?php checked( $checked ); ?>>
+						<input type="<?php echo esc_attr( $type ); ?>" id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $option_key ); ?>" value="<?php echo esc_attr( $option_value ); ?>" <?php checked( $checked ); ?> <?php echo $checked_r;?> >
 						<?php echo $option_label; ?>
 					</label>
 				</li>
@@ -218,9 +236,16 @@ function bsb_save_account_fields( $customer_id ) {
 			$sanitized_data[ $key ] = $value;
 			continue;
 		}		
-
+		//echo $customer_id."<br>";
+		//echo $key."<br>";
+		//echo $value."<br>";
+		//die();
 		update_user_meta( $customer_id, $key, $value );
+		//update_user_meta( 2, "bsb_contact_preferences", "1" );
 	}
+
+	$udata = get_userdata($customer_id);
+	$sanitized_data['display_name'] = $udata->first_name;
 
 	if ( ! empty( $sanitized_data ) ) {
 		$sanitized_data['ID'] = $customer_id;
